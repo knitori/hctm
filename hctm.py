@@ -131,7 +131,6 @@ def use_theme(config, theme):
     print('Finished.')
 
 
-
 def remove_theme(config, theme):
     """Remove a theme from the hexchat themes folder."""
 
