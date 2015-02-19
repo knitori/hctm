@@ -191,11 +191,11 @@ if __name__ == '__main__':
     config['meta_file'] = os.path.join(config['themes_dir'], '.theme')
     config['allowed_files'] = {'pevents.conf', 'colors.conf'}
 
-    if args.install is None and args.use is None and args.remove is None:
-        show_themes(config)
-    elif args.install is None and args.use is None:
+    if args.install is not None:
+        install_theme(config, args.install)
+    elif args.remove is not None:
         remove_theme(config, args.remove)
-    elif args.install is None and args.remove is None:
+    elif args.use is not None:
         use_theme(config, args.use)
     else:
-        install_theme(config, args.install)
+        show_themes(config)
