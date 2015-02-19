@@ -64,11 +64,16 @@ def show_themes(config):
     meta = load_meta_data(config['meta_file'])
     current = meta.get('current', '')
     print('\nInstalled themes:')
+    current_in_list = False
     for path, name in themes:
         if current.lower() == name.lower():
             print('  * {}'.format(name))
+            current_in_list = True
         else:
             print('    {}'.format(name))
+    if not current_in_list:
+        # theme folder deleted, but theme is still active
+        print('  ! {}'.format(current))
     print()
     print('Use -u/--use THEME to use the specified theme.')
 
