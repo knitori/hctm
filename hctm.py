@@ -8,13 +8,12 @@ import subprocess
 
 
 def is_hexchat_running():
-    proc = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
+    proc = subprocess.Popen(
+        'ps -A | grep hexchat', stdout=subprocess.PIPE, shell=True)
     output, _ = proc.communicate()
-    lines = [l.split(None, 4) for l in
-             output.decode('ascii', 'replace').splitlines()]
-    for pid, _, _, cmdname in lines:
-        if cmdname.lower() == 'hexchat':
-            return True
+    lines = [l.strip() for l in output.decode('ascii', 'replace').splitlines()]
+    if lines:
+        return True
     return False
 
 
