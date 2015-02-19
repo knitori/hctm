@@ -44,6 +44,12 @@ def load_meta_data(meta_file):
     return metadata
 
 
+def write_meta_data(meta_file, metadata):
+    with open(meta_file, 'w', encoding='utf-8') as fp:
+        for key, value in sorted(metadata.items()):
+            fp.write('{} = {}\n'.format(key, value))
+
+
 def show_themes(config):
     themes = get_installed_themes(config['themes_dir'])
     if not themes:
@@ -51,26 +57,77 @@ def show_themes(config):
         return
     meta = load_meta_data(config['meta_file'])
 
-    current = meta.get('current', '\033[33mNone\033[0m')
+    current = meta.get('current', '')
     print('\nCurrently used theme: {}'.format(current))
 
     print('\nInstalled themes:')
     for path, name in themes:
-        print('  * {}'.format(name))
+        if current.lower() == name.lower():
+            print('  * {}'.format(name))
+        else:
+            print('    {}'.format(name))
     print()
     print('Use -u/--use THEME to use the specified theme.')
 
 
 def use_theme(config, theme):
-    if is_hexchat_running():
-        print('\033[31mHexChat is still running.')
-        print('You have to close HexChat before any changes to the '
-              'themes can be applied.\033[0m')
+    themes = get_installed_themes(config['themes_dir'])
+    for themes_dir, themes_name in themes:
+        if themes_name.lower() == theme.lower():
+            # themes_dir and themes_name will be available
+            # outside the for-loop
+            break
+    else:
+        print('No such theme {!r}.'.format(theme))
         return
+
+    meta = load_meta_data(config['meta_file'])
+    current_theme = meta.get('current', '')
+    if current_theme.lower() == theme.lower():
+        print('The theme {!r} is already in use.'.format(current_theme))
+        return
+
+    if is_hexchat_running():
+        print('HexChat is still running.')
+        print('You have to close HexChat before any changes to the '
+              'themes can be applied.')
+        return
+
+    to_copy = []
+
+    print('Activating theme {!r}'.format(themes_name))
+    for filename in os.listdir(themes_dir):
+        if filename in config['allowed_files']:
+            theme_file = os.path.join(themes_dir, filename)
+            target_file = os.path.join(config['config_dir'], filename)
+            to_copy.append((theme_file, target_file, filename,
+                            os.path.exists(target_file)))
+    replace_count = sum(1 for p in to_copy if p[-1])
+    if replace_count:
+        print()
+        for src, dst, fn, exists in to_copy:
+            if exists:
+                print('{}'.format(dst))
+        print()
+        answer = input('The above files will be replace by the new files. '
+                       'Continue? (y/N)').lower().strip()
+        if answer != 'y':
+            print('Aborted.')
+            return
+    for src, dst, fn, exists in to_copy:
+        shutil.copyfile(src, dst)
+    meta['current'] = themes_name
+    write_meta_data(config['meta_file'], meta)
+    print('Finished.')
+
 
 
 def remove_theme(config, theme):
-    pass
+    if is_hexchat_running():
+        print('HexChat is still running.')
+        print('You have to close HexChat before any changes to the '
+              'themes can be applied.')
+        return
 
 
 def install_theme(config, fileobj):
