@@ -18,6 +18,9 @@ def is_hexchat_running():
 
 
 def get_installed_themes(themes_dir):
+    """Return a list of tuples (path_to_dir, dirname) for each
+    theme under ~/.config/hexchat/themes/"""
+
     if not os.path.exists(themes_dir):
         return []
     filenames = ((os.path.join(themes_dir, fn), fn) for fn in os.listdir(themes_dir))
@@ -27,6 +30,9 @@ def get_installed_themes(themes_dir):
 
 
 def load_meta_data(meta_file):
+    """The meta file is a simple 'key = value' per line config.
+    Return a dictionary of those values."""
+
     metadata = {}
     if os.path.exists(meta_file):
         with open(meta_file, 'r', encoding='utf-8') as fp:
@@ -56,10 +62,7 @@ def show_themes(config):
         print('No themes installed.')
         return
     meta = load_meta_data(config['meta_file'])
-
     current = meta.get('current', '')
-    print('\nCurrently used theme: {}'.format(current))
-
     print('\nInstalled themes:')
     for path, name in themes:
         if current.lower() == name.lower():
@@ -71,6 +74,8 @@ def show_themes(config):
 
 
 def use_theme(config, theme):
+    """Enable a theme that's installed in the hexchat themes folder."""
+
     themes = get_installed_themes(config['themes_dir'])
     for themes_dir, themes_name in themes:
         if themes_name.lower() == theme.lower():
@@ -123,6 +128,8 @@ def use_theme(config, theme):
 
 
 def remove_theme(config, theme):
+    """Remove a theme from the hexchat themes folder."""
+
     if is_hexchat_running():
         print('HexChat is still running.')
         print('You have to close HexChat before any changes to the '
@@ -131,6 +138,8 @@ def remove_theme(config, theme):
 
 
 def install_theme(config, fileobj):
+    """Copy zip file content into the hexchat themes folder."""
+
     theme_name = os.path.basename(fileobj.name)
     if theme_name.lower().endswith(('.hct', '.zip')):
         theme_name = theme_name[:-4]
@@ -138,7 +147,7 @@ def install_theme(config, fileobj):
     target_dir = os.path.join(config['themes_dir'], theme_name)
     if os.path.exists(target_dir):
         answer = input('A theme with the name {} already exists. '
-                       'Overwrite? (y/N): '.format(theme_name)).lower().strip()
+                       'Replace? (y/N): '.format(theme_name)).lower().strip()
         if answer != 'y':
             print('Aborting.')
             return
