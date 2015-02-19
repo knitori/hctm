@@ -23,7 +23,8 @@ def get_installed_themes(themes_dir):
 
     if not os.path.exists(themes_dir):
         return []
-    filenames = ((os.path.join(themes_dir, fn), fn) for fn in os.listdir(themes_dir))
+    filenames = ((os.path.join(themes_dir, fn), fn) for fn
+                 in os.listdir(themes_dir))
     dirnames = [fn for fn in filenames if os.path.isdir(fn[0])]
     dirnames.sort(key=lambda e: e[1].lower())
     return dirnames
@@ -184,7 +185,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     config = {}
-    config['config_dir'] = os.path.join(os.environ['HOME'], '.config', 'hexchat')
+    config['config_dir'] = os.path.join(
+        os.environ['HOME'], '.config', 'hexchat')
     config['themes_dir'] = os.path.join(config['config_dir'], 'themes')
     config['meta_file'] = os.path.join(config['themes_dir'], '.theme')
     config['allowed_files'] = {'pevents.conf', 'colors.conf'}
